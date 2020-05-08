@@ -371,7 +371,9 @@ void limits_go_home(uint8_t cycle_mask)
     #ifdef COREXY
       if ((idx==A_MOTOR)||(idx==B_MOTOR)) { step_pin[idx] = (get_step_pin_mask(AXIS_1)|get_step_pin_mask(AXIS_2)); }
     #endif
-
+    #ifdef COREUZ
+      if ((idx==C_MOTOR)||(idx==D_MOTOR)) { step_pin[idx] = (get_step_pin_mask(AXIS_3)|get_step_pin_mask(AXIS_4)); }
+    #endif
     if (bit_istrue(cycle_mask,bit(idx))) {
       // Set target based on max_travel setting. Ensure homing switches engaged with search scalar.
       // NOTE: settings.max_travel[] is stored as a negative value.
@@ -403,9 +405,21 @@ void limits_go_home(uint8_t cycle_mask)
             } else if (idx == AXIS_2) {
               int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
               sys_position[A_MOTOR] = sys_position[B_MOTOR] = axis_position;
-            } else {
+            } 
+          #ifdef COREUZ
+              elseif (idx == AXIS_3) {
+              int32_t axis_position = system_convert_corexy_to_y_axis_steps(sys_position);
+              sys_position[C_MOTOR] = axis_position;
+              sys_position[D_MOTOR] = -axis_position;
+            } else if (idx == AXIS_4) {
+              int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
+              sys_position[C_MOTOR] = sys_position[D_MOTOR] = axis_position;
+            } 
+          #else
+          else {
               sys_position[AXIS_3] = 0;
             }
+          #endif
           #else
             sys_position[idx] = 0;
           #endif
