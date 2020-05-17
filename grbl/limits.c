@@ -371,9 +371,10 @@ void limits_go_home(uint8_t cycle_mask)
     #ifdef COREXY
       if ((idx==A_MOTOR)||(idx==B_MOTOR)) { step_pin[idx] = (get_step_pin_mask(AXIS_1)|get_step_pin_mask(AXIS_2)); }
     #endif
-    #ifdef COREUZ
+    #ifdef COREUV
       if ((idx==C_MOTOR)||(idx==D_MOTOR)) { step_pin[idx] = (get_step_pin_mask(AXIS_3)|get_step_pin_mask(AXIS_4)); }
     #endif
+
     if (bit_istrue(cycle_mask,bit(idx))) {
       // Set target based on max_travel setting. Ensure homing switches engaged with search scalar.
       // NOTE: settings.max_travel[] is stored as a negative value.
@@ -405,21 +406,19 @@ void limits_go_home(uint8_t cycle_mask)
             } else if (idx == AXIS_2) {
               int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
               sys_position[A_MOTOR] = sys_position[B_MOTOR] = axis_position;
-            } 
-          #ifdef COREUZ
-              elseif (idx == AXIS_3) {
-              int32_t axis_position = system_convert_corexy_to_y_axis_steps(sys_position);
+            #ifdef COREUV
+            } else if (idx == AXIS_3) {
+              int32_t axis_position = system_convert_coreuv_to_v_axis_steps(sys_position);
               sys_position[C_MOTOR] = axis_position;
               sys_position[D_MOTOR] = -axis_position;
             } else if (idx == AXIS_4) {
-              int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
+              int32_t axis_position = system_convert_coreuv_to_u_axis_steps(sys_position);
               sys_position[C_MOTOR] = sys_position[D_MOTOR] = axis_position;
-            } 
-          #else
-          else {
+            #else 
+            } else {
               sys_position[AXIS_3] = 0;
+            #endif
             }
-          #endif
           #else
             sys_position[idx] = 0;
           #endif
@@ -456,10 +455,14 @@ void limits_go_home(uint8_t cycle_mask)
             if (axislock[idx] & step_pin[idx]) {
               if (limit_state & (1 << idx)) {
                 #ifdef COREXY
+                #ifdef COREUV
+                  if (idx==AXIS_3|AXIS_4) { axislock[idx] &= ~(step_pin[C_MOTOR]|step_pin[D_MOTOR]); }
+                #else
                   if (idx==AXIS_3) { axislock[idx] &= ~(step_pin[AXIS_3]); }
                   #if N_AXIS > 3
                     else if (idx==AXIS_4) { axislock[idx] &= ~(step_pin[AXIS_4]); }
                   #endif
+                #endif
                   #if N_AXIS > 4
                     else if (idx==AXIS_5) { axislock[idx] &= ~(step_pin[AXIS_5]); }
                   #endif
@@ -537,10 +540,16 @@ void limits_go_home(uint8_t cycle_mask)
             } else if (idx == AXIS_2) {
               int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
               sys_position[A_MOTOR] = sys_position[B_MOTOR] = axis_position;
+            #ifdef COREUV
+            } else if (idx == AXIS_3) {
+              int32_t axis_position = system_convert_coreuv_to_v_axis_steps(sys_position);
+              sys_position[C_MOTOR] = axis_position;
+              sys_position[D_MOTOR] = -axis_position;
+            } else if (idx == AXIS_4) {
+              int32_t axis_position = system_convert_coreuv_to_u_axis_steps(sys_position);
+              sys_position[C_MOTOR] = sys_position[D_MOTOR] = axis_position;
+            #else 
             } else {
-            #if N_AXIS > 3
-              sys_position[idx] = 0;
-            #else
               sys_position[AXIS_3] = 0;
             #endif
             }
@@ -579,19 +588,23 @@ void limits_go_home(uint8_t cycle_mask)
             if (axislock & step_pin[idx]) {
               if (limit_state & (1 << idx)) {
                 #ifdef COREXY
-                  if (idx==AXIS_3) { axislock &= ~(step_pin[AXIS_3]); }
+                #ifdef COREUV
+                  if (idx==AXIS_3|AXIS_4) { axislock[idx] &= ~(step_pin[C_MOTOR]|step_pin[D_MOTOR]); }
+                #else
+                  if (idx==AXIS_3) { axislock[idx] &= ~(step_pin[AXIS_3]); }
                   #if N_AXIS > 3
-                    else if (idx==AXIS_4) { axislock &= ~(step_pin[AXIS_4]); }
+                    else if (idx==AXIS_4) { axislock[idx] &= ~(step_pin[AXIS_4]); }
                   #endif
+                #endif
                   #if N_AXIS > 4
-                    else if (idx==AXIS_5) { axislock &= ~(step_pin[AXIS_5]); }
+                    else if (idx==AXIS_5) { axislock[idx] &= ~(step_pin[AXIS_5]); }
                   #endif
                   #if N_AXIS > 5
-                    else if (idx==AXIS_6) { axislock &= ~(step_pin[AXIS_6]); }
+                    else if (idx==AXIS_6) { axislock[idx] &= ~(step_pin[AXIS_6]); }
                   #endif
-                  else { axislock &= ~(step_pin[A_MOTOR]|step_pin[B_MOTOR]); }
+                  else { axislock[idx] &= ~(step_pin[A_MOTOR]|step_pin[B_MOTOR]); }
                 #else
-                  axislock &= ~(step_pin[idx]);
+                  axislock[idx] &= ~(step_pin[idx]);
                 #endif
               }
             }
@@ -671,6 +684,16 @@ void limits_go_home(uint8_t cycle_mask)
           int32_t off_axis_position = system_convert_corexy_to_x_axis_steps(sys_position);
           sys_position[A_MOTOR] = off_axis_position + set_axis_position;
           sys_position[B_MOTOR] = off_axis_position - set_axis_position;
+        #ifdef COREUV
+        } else if (idx==AXIS_3) {
+          int32_t off_axis_position = system_convert_coreuv_to_v_axis_steps(sys_position);
+          sys_position[C_MOTOR] = set_axis_position + off_axis_position;
+          sys_position[D_MOTOR] = set_axis_position - off_axis_position;
+        } else if (idx==AXIS_4) {
+          int32_t off_axis_position = system_convert_coreuv_to_u_axis_steps(sys_position);
+          sys_position[C_MOTOR] = off_axis_position + set_axis_position;
+          sys_position[D_MOTOR] = off_axis_position - set_axis_position;
+        #endif
         } else {
           sys_position[idx] = set_axis_position;
         }
