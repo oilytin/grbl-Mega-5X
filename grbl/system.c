@@ -330,7 +330,7 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
     } else if (idx==AXIS_2) {
       pos = (float)system_convert_corexy_to_y_axis_steps(steps) / settings.steps_per_mm[idx];
     #ifdef COREUV
-    } else if idx==AXIS_3) {
+    } else if (idx==AXIS_3) {
       pos = (float)system_convert_coreuv_to_u_axis_steps(steps) / settings.steps_per_mm[idx];
     } else if (idx==AXIS_4) {
       pos = (float)system_convert_coreuv_to_v_axis_steps(steps) / settings.steps_per_mm[idx];
