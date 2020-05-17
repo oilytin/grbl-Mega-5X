@@ -35,8 +35,8 @@
  #define B_MOTOR AXIS_2 // Must be AXIS_2 (Y)
 #endif
 #ifdef COREUV
- #define A_MOTOR AXIS_3 // Must be AXIS_1 (X)
- #define B_MOTOR AXIS_4 // Must be AXIS_2 (Y)
+ #define C_MOTOR AXIS_3 // Must be AXIS_1 (X)
+ #define D_MOTOR AXIS_4 // Must be AXIS_2 (Y)
 #endif
 
 // Conversions
