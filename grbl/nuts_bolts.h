@@ -34,8 +34,7 @@
  #define A_MOTOR AXIS_1 // Must be AXIS_1 (X)
  #define B_MOTOR AXIS_2 // Must be AXIS_2 (Y)
 #endif
-// CoreUZ motor assignments
-#ifdef COREUZ
+#ifdef COREUV
  #define A_MOTOR AXIS_3 // Must be AXIS_1 (X)
  #define B_MOTOR AXIS_4 // Must be AXIS_2 (Y)
 #endif
