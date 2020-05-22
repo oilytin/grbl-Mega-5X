@@ -50,8 +50,8 @@
 // Axis array index values. Must start with 0 and be continuous.
 #ifdef DEFAULTS_RAMPS_BOARD
   // 4, 5 & 6 axis support only for RAMPS 1.4 (for the moment :-)...)
-  #define N_AXIS 5            // Number of axes
-  #define N_AXIS_LINEAR 3     // Number of linears axis
+  #define N_AXIS 4            // Number of axes
+  #define N_AXIS_LINEAR 4     // Number of linears axis
 #else
   #define N_AXIS 3 // Number of axes = 3 if not DEFAULTS_RAMPS_BOARD
 #endif
@@ -61,14 +61,14 @@
 #define AXIS_2 1
 #define AXIS_2_NAME 'Y'
 #define AXIS_3 2
-#define AXIS_3_NAME 'Z'
+#define AXIS_3_NAME 'U'
 
 #if N_AXIS <3
   #error "N_AXIS must be >= 3. N_AXIS < 3 is not implemented."
 #endif
 #if N_AXIS > 3
   #define AXIS_4 3
-  #define AXIS_4_NAME 'A' // Letter of axis number 4
+  #define AXIS_4_NAME 'V' // Letter of axis number 4
 #endif
 #if N_AXIS > 4
   #define AXIS_5 4
@@ -269,8 +269,8 @@
 // defined at (http://corexy.com/theory.html). Motors are assumed to positioned and wired exactly as
 // described, if not, motions may move in strange directions. Grbl requires the CoreXY A and B motors
 // have the same steps per mm internally.
-// #define COREXY // Default disabled. Uncomment to enable.
-
+#define COREXY // Default disabled. Uncomment to enable.
+#define COREUV // Support for hotwire aplication.
 // Inverts pin logic of the control command pins based on a mask. This essentially means you can use
 // normally-closed switches on the specified pins, rather than the default normally-open switches.
 // NOTE: The top option will mask and invert all control pins. The bottom option is an example of

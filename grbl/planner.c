@@ -332,9 +332,17 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     #ifdef COREXY
       position_steps[AXIS_1] = system_convert_corexy_to_x_axis_steps(sys_position);
       position_steps[AXIS_2] = system_convert_corexy_to_y_axis_steps(sys_position);
+      #ifdef COREUV
+        position_steps[AXIS_3] = system_convert_coreuv_to_u_axis_steps(sys_position);
+        #else
       position_steps[AXIS_3] = sys_position[AXIS_3];
+      #endif
       #if N_AXIS > 3
+      #ifdef COREUV
+      position_steps[AXIS_4] = system_convert_coreuv_to_v_axis_steps(sys_position);
+      #else
         position_steps[AXIS_4] = sys_position[AXIS_4];
+        #endif
       #endif
       #if N_AXIS > 4
         position_steps[AXIS_5] = sys_position[AXIS_5];
@@ -353,13 +361,23 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     block->steps[A_MOTOR] = labs((target_steps[AXIS_1]-position_steps[AXIS_1]) + (target_steps[AXIS_2]-position_steps[AXIS_2]));
     block->steps[B_MOTOR] = labs((target_steps[AXIS_1]-position_steps[AXIS_1]) - (target_steps[AXIS_2]-position_steps[AXIS_2]));
   #endif
+  #ifdef COREUV
+    target_steps[C_MOTOR] = lround(target[C_MOTOR]*settings.steps_per_mm[C_MOTOR]);
+    target_steps[D_MOTOR] = lround(target[D_MOTOR]*settings.steps_per_mm[D_MOTOR]);
+    block->steps[C_MOTOR] = labs((target_steps[AXIS_3]-position_steps[AXIS_3]) + (target_steps[AXIS_4]-position_steps[AXIS_4]));
+    block->steps[D_MOTOR] = labs((target_steps[AXIS_3]-position_steps[AXIS_3]) - (target_steps[AXIS_4]-position_steps[AXIS_4]));
+  #endif
 
   for (idx=0; idx<N_AXIS; idx++) {
     // Calculate target position in absolute steps, number of steps for each axis, and determine max step events.
     // Also, compute individual axes distance for move and prep unit vector calculations.
     // NOTE: Computes true distance from converted step values.
     #ifdef COREXY
+    #ifdef COREUV
+      if ( !(idx == A_MOTOR) && !(idx == B_MOTOR) && !(idx == C_MOTOR) && !(idx == D_MOTOR) ) {
+      #else
       if ( !(idx == A_MOTOR) && !(idx == B_MOTOR) ) {
+      #endif
         target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
         block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
       }
@@ -368,7 +386,15 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
         delta_mm = (target_steps[AXIS_1]-position_steps[AXIS_1] + target_steps[AXIS_2]-position_steps[AXIS_2])/settings.steps_per_mm[idx];
       } else if (idx == B_MOTOR) {
         delta_mm = (target_steps[AXIS_1]-position_steps[AXIS_1] - target_steps[AXIS_2]+position_steps[AXIS_2])/settings.steps_per_mm[idx];
-      } else {
+      }
+      #ifdef COREUV
+        else if (idx == C_MOTOR) {
+        delta_mm = (target_steps[AXIS_3]-position_steps[AXIS_3] + target_steps[AXIS_4]-position_steps[AXIS_4])/settings.steps_per_mm[idx];
+      } else if (idx == D_MOTOR) {
+        delta_mm = (target_steps[AXIS_3]-position_steps[AXIS_3] - target_steps[AXIS_4]+position_steps[AXIS_4])/settings.steps_per_mm[idx];
+      }
+      #endif
+      else {
         delta_mm = (target_steps[idx] - position_steps[idx])/settings.steps_per_mm[idx];
       }
     #else
@@ -494,6 +520,12 @@ void plan_sync_position()
         pl.position[AXIS_1] = system_convert_corexy_to_x_axis_steps(sys_position);
       } else if (idx==AXIS_2) {
         pl.position[AXIS_2] = system_convert_corexy_to_y_axis_steps(sys_position);
+      #ifdef COREUV
+      } else if (idx==AXIS_3) {
+        pl.position[AXIS_3] = system_convert_coreuv_to_u_axis_steps(sys_position);
+      } else if (idx==AXIS_4) {
+        pl.position[AXIS_4] = system_convert_coreuv_to_v_axis_steps(sys_position);
+      #endif
       } else {
         pl.position[idx] = sys_position[idx];
       }

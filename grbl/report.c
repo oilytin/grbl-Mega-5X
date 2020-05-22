@@ -513,6 +513,9 @@ void report_build_info(char *line)
   #ifdef COREXY
     serial_write('C');
   #endif
+  #ifdef COREUV
+    serial_write('U');
+  #endif
   #ifdef PARKING_ENABLE
     serial_write('P');
   #endif

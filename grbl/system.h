@@ -195,6 +195,11 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps);
   int32_t system_convert_corexy_to_y_axis_steps(int32_t *steps);
 #endif
 
+#ifdef COREUV
+  int32_t system_convert_coreuv_to_u_axis_steps(int32_t *steps);
+  int32_t system_convert_coreuv_to_v_axis_steps(int32_t *steps);
+#endif
+
 // Checks and reports if target array exceeds machine travel limits.
 uint8_t system_check_travel_limits(float *target);
 
